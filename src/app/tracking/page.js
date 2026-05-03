@@ -346,7 +346,7 @@ try {
               <input
                 type="text"
                 className="form-control search-input"
-                placeholder="Contoh: GA-2024-001"
+                placeholder="Contoh: C06.001002 atau Serial Number"
                 value={kodeAset}
                 onChange={(e) => setKodeAset(e.target.value.toUpperCase())}
                 style={{ paddingLeft: "1.25rem", paddingTop: "0.85rem", paddingBottom: "0.85rem" }}
