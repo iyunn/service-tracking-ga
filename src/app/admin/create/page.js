@@ -29,7 +29,7 @@ const FIELDS = [
   {
     key: "kode_aset",
     label: "Kode Aset",
-    placeholder: "Contoh: GA-2024-001",
+    placeholder: "Contoh: C06.xxxxxx",
     icon: "bi-upc-scan",
     required: true,
     hint: "Kode unik identifikasi aset",
@@ -38,14 +38,14 @@ const FIELDS = [
   {
     key: "nama_barang",
     label: "Nama Barang",
-    placeholder: "Contoh: Laptop Dell Inspiron 15",
+    placeholder: "Contoh: Printer Thermal",
     icon: "bi-box-seam",
     required: true,
   },
   {
     key: "kategori_barang",
     label: "Kategori Barang",
-    placeholder: "Contoh: Laptop, Printer, Monitor…",
+    placeholder: "Contoh: Elektronik, Furniture, Rak Toko, dll.",
     icon: "bi-tag",
     required: false,
     hint: "Opsional",
@@ -53,14 +53,14 @@ const FIELDS = [
   {
     key: "pemilik_asal",
     label: "Pemilik / Unit Asal",
-    placeholder: "Contoh: Divisi Keuangan — Budi Santoso",
+    placeholder: "Contoh: TXXX - Idm Tambak Aji",
     icon: "bi-person",
     required: true,
   },
   {
     key: "merk",
     label: "Merk / Tipe",
-    placeholder: "Contoh: Dell Inspiron 15 3000",
+    placeholder: "Contoh: Epson",
     icon: "bi-cpu",
     required: false,
     hint: "Opsional",
@@ -68,7 +68,7 @@ const FIELDS = [
   {
     key: "serial_number",
     label: "Serial Number",
-    placeholder: "Contoh: SN-ABCD-12345",
+    placeholder: "Contoh: XXXXXX",
     icon: "bi-hash",
     required: false,
     hint: "Opsional",
