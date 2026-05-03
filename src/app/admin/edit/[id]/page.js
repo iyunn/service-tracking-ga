@@ -227,7 +227,7 @@ export default function AdminEditPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;700&display=swap');
 
         body { background: #060d19 !important; }
 
@@ -239,7 +239,8 @@ export default function AdminEditPage() {
         }
         .edit-root h1, .edit-root h2, .edit-root h3,
         .edit-root h4, .edit-root h5 {
-          font-family: 'Syne', sans-serif;
+        font-family: 'Inter', sans-serif;
+        letter-spacing: -0.02em;
         }
 
         .btn-back {
@@ -329,7 +330,7 @@ export default function AdminEditPage() {
           padding: 0.8rem 1.5rem;
           font-size: 0.95rem;
           font-weight: 700;
-          font-family: 'Syne', sans-serif;
+          font-family: 'Inter', sans-serif;
           letter-spacing: 0.03em;
           cursor: pointer;
           transition: background 0.15s, transform 0.12s, opacity 0.15s;

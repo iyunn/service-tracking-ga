@@ -156,7 +156,7 @@ console.log("KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;700&display=swap');
 
         body { background: #060d19 !important; }
 
@@ -167,7 +167,8 @@ console.log("KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
           color: #e2e8f0;
         }
         .admin-root h1, .admin-root h2, .admin-root h4, .admin-root h5 {
-          font-family: 'Syne', sans-serif;
+          font-family: 'Inter', sans-serif;
+          letter-spacing: -0.02em;
         }
 
         /* Sidebar nav */
@@ -265,7 +266,7 @@ console.log("KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
           color: #7dd3fc;
           border-radius: 6px;
           padding: 2px 10px;
-          font-family: 'Syne', monospace;
+          font-family: 'Geist Mono', monospace;
           font-size: 0.8rem;
           font-weight: 700;
           letter-spacing: 0.06em;
@@ -300,7 +301,7 @@ console.log("KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
           border-radius: 10px;
           padding: 0.55rem 1.3rem;
           font-weight: 700;
-          font-family: 'Syne', sans-serif;
+          font-family: 'Inter', sans-serif;
           font-size: 0.88rem;
           letter-spacing: 0.03em;
           transition: background 0.15s, transform 0.12s;

@@ -209,7 +209,7 @@ export default function AdminCreatePage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;700&display=swap');
 
         body { background: #060d19 !important; }
 
@@ -221,7 +221,8 @@ export default function AdminCreatePage() {
         }
         .create-root h1, .create-root h2, .create-root h3,
         .create-root h4, .create-root h5 {
-          font-family: 'Syne', sans-serif;
+        font-family: 'Inter', sans-serif;
+        letter-spacing: -0.02em;
         }
 
         textarea.form-textarea {
@@ -272,7 +273,7 @@ export default function AdminCreatePage() {
           padding: 0.8rem 1.5rem;
           font-size: 0.95rem;
           font-weight: 700;
-          font-family: 'Syne', sans-serif;
+          font-family: 'Inter', sans-serif;
           letter-spacing: 0.03em;
           cursor: pointer;
           transition: background 0.15s, transform 0.12s, opacity 0.15s;
