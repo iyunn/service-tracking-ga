@@ -484,8 +484,8 @@ console.log("KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
           )}
 
           {/* Table */}
-          <div className="admin-table-wrap fade-up">
-            <table className="admin-table">
+          <div className="admin-table-wrap fade-up" style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+            <table className="admin-table" style={{ minWidth: "680px" }}>
               <thead>
                 <tr>
                   <th
