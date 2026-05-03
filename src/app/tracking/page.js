@@ -185,7 +185,7 @@ try {
     <>
       {/* ── Global styles ── */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;700&display=swap');
 
         body { background: #060d19 !important; }
 
@@ -197,7 +197,8 @@ try {
         }
         .tracking-root h1, .tracking-root h2, .tracking-root h3,
         .tracking-root h4, .tracking-root h5 {
-          font-family: 'Syne', sans-serif;
+          font-family: 'Inter', sans-serif;
+          letter-spacing: -0.02em;
         }
 
         /* Search input */
@@ -387,21 +388,19 @@ try {
             <div className="fade-up mt-4">
               {/* Header strip */}
               <div
-                className="d-flex align-items-center justify-content-between p-4 mb-1"
+                className="p-4 mb-1"
                 style={{
                   background: "linear-gradient(135deg, #0f172a, #0d2237)",
                   border: "1px solid #1e3a5f",
                   borderRadius: "16px 16px 0 0",
                 }}
               >
-                <div>
-                  <p className="mb-1" style={{ color: "#64748b", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600 }}>
-                    Kode Aset
-                  </p>
-                  <h2 className="mb-0" style={{ fontFamily: "Syne, sans-serif", fontSize: "1.6rem", fontWeight: 800, color: "#38bdf8", letterSpacing: "0.06em" }}>
-                    {item.kode_aset}
-                  </h2>
-                </div>
+                <p className="mb-1" style={{ color: "#64748b", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600 }}>
+                  Kode Aset
+                </p>
+                <h2 className="mb-3" style={{ fontFamily: "'Geist Mono', 'Courier New', monospace", fontSize: "1.5rem", fontWeight: 700, color: "#38bdf8", letterSpacing: "0.04em" }}>
+                  {item.kode_aset}
+                </h2>
                 <StatusBadge status={latestStatus} />
               </div>
 
