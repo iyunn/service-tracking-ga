@@ -87,7 +87,6 @@ export default function AdminEditPage() {
   const [lokasi,  setLokasi]  = useState("");
   const [catatan, setCatatan] = useState("");
   const [loading, setLoading] = useState(false);
-  const [notifSent, setNotifSent] = useState(false);
 
   const [lokFocus, setLokFocus] = useState(false);
   const [catFocus, setCatFocus] = useState(false);
@@ -121,7 +120,6 @@ export default function AdminEditPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-    setNotifSent(false);
 
     try {
       // 1. Update service_items
@@ -148,27 +146,21 @@ export default function AdminEditPage() {
 
       if (logErr) throw logErr;
 
-      // 3. Kirim notifikasi email jika ada email pelanggan
-      if (item?.email_pelanggan) {
-        const res = await fetch("/api/notify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email_pelanggan: item.email_pelanggan,
-            nama_barang:     item.nama_barang,
-            kode_aset:       item.kode_aset,
-            status,
-            catatan:         catatan.trim() || null,
-            lokasi:          lokasi.trim() || null,
-          }),
-        });
-        if (res.ok) setNotifSent(true);
+      // 3. Auto-buka WA Web jika ada no HP pelanggan
+      if (item?.no_hp_pelanggan) {
+        const noHp = item.no_hp_pelanggan.replace(/^0/, "62").replace(/\D/g, "");
+        const statusLabel = getStatusMeta(status).label;
+        const pesan = encodeURIComponent(
+          `Halo ${item.pemilik_asal ?? "Pelanggan"}, kami ingin menginformasikan update terbaru barang servis Anda:\n\n` +
+          `📦 Barang   : ${item.nama_barang ?? "-"}\n` +
+          `🔖 Kode     : ${item.kode_aset ?? "-"}\n` +
+          `📍 Status   : ${statusLabel}\n` +
+          (catatan.trim() ? `📝 Catatan  : ${catatan.trim()}\n` : "") +
+          `\nTerima kasih telah mempercayakan servis kepada kami.`
+        );
+        window.open(`https://wa.me/${noHp}?text=${pesan}`, "_blank");
       }
 
-      alert(
-        `✅ Status berhasil diperbarui!\nStatus: ${getStatusMeta(status).label}` +
-        (item?.email_pelanggan ? "\n📧 Notifikasi email terkirim ke pelanggan." : "")
-      );
       router.push("/admin");
     } catch (err) {
       console.error("Gagal update:", err);
@@ -340,6 +332,7 @@ export default function AdminEditPage() {
                     </div>
                     <InfoRow icon="bi-box-seam"      label="Nama Barang"  value={item.nama_barang} />
                     <InfoRow icon="bi-person"         label="Pelanggan"    value={item.pemilik_asal} />
+                    <InfoRow icon="bi-telephone"      label="No. HP / WA"  value={item.no_hp_pelanggan} />
                     <InfoRow icon="bi-envelope"       label="Email"        value={item.email_pelanggan} />
                     <InfoRow icon="bi-cpu"            label="Merk / Tipe"  value={item.merk} />
                     <InfoRow icon="bi-hash"           label="Serial No."   value={item.serial_number} />
@@ -355,29 +348,21 @@ export default function AdminEditPage() {
                     )}
 
                     {/* Notif indicator */}
-                    {item.email_pelanggan ? (
-                      <div style={{
-                        display: "flex", alignItems: "center", gap: "0.5rem",
-                        padding: "0.65rem 1rem", margin: "0.75rem 0",
-                        background: "#10b98108", border: "1px solid #10b98130", borderRadius: "8px",
-                      }}>
-                        <i className="bi bi-envelope-check" style={{ color: "#10b981" }}></i>
-                        <span style={{ fontSize: "0.8rem", color: "#10b981", fontWeight: 600 }}>
-                          Email notifikasi aktif — akan dikirim otomatis saat simpan
-                        </span>
-                      </div>
-                    ) : (
-                      <div style={{
-                        display: "flex", alignItems: "center", gap: "0.5rem",
-                        padding: "0.65rem 1rem", margin: "0.75rem 0",
-                        background: "#64748b08", border: "1px solid #64748b30", borderRadius: "8px",
-                      }}>
-                        <i className="bi bi-envelope-slash" style={{ color: "#64748b" }}></i>
-                        <span style={{ fontSize: "0.8rem", color: "#64748b" }}>
-                          Tidak ada email pelanggan — notifikasi tidak dikirim
-                        </span>
-                      </div>
-                    )}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", margin: "0.75rem 0" }}>
+                      {item.no_hp_pelanggan && (
+                        <div style={{
+                          display: "flex", alignItems: "center", gap: "0.5rem",
+                          padding: "0.65rem 1rem",
+                          background: "#25d36608", border: "1px solid #25d36640", borderRadius: "8px",
+                        }}>
+                          <i className="bi bi-whatsapp" style={{ color: "#25d366" }}></i>
+                          <span style={{ fontSize: "0.8rem", color: "#25d366", fontWeight: 600 }}>
+                            WA aktif — notifikasi otomatis dikirim ke {item.no_hp_pelanggan} saat simpan
+                          </span>
+                        </div>
+                      )}
+
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -492,7 +477,7 @@ export default function AdminEditPage() {
                     ) : (
                       <>
                         <i className="bi bi-floppy"></i>
-                        Simpan{item?.email_pelanggan ? " & Kirim Notifikasi" : " Perubahan"}
+                        Simpan & Kirim Notifikasi
                       </>
                     )}
                   </button>
