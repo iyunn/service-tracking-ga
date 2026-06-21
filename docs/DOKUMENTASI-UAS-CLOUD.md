@@ -1,30 +1,31 @@
 # Dokumentasi UAS Cloud Computing
-## Service Tracking GA — Migrasi ke Layanan Cloud Berbayar
+## Service Tracking — Migrasi ke Layanan Cloud Berbayar
 
 ---
 
 ## 1. Deskripsi Aplikasi
 
-**Service Tracking GA** adalah aplikasi web berbasis Next.js yang dibangun untuk melacak status barang yang sedang dalam proses servis di divisi General Affairs.
+**Service Tracking** adalah aplikasi web berbasis Next.js yang digunakan untuk melacak status barang yang sedang dalam proses servis. Aplikasi ini bersifat general dan dapat digunakan oleh service center manapun — mulai dari toko servis laptop/HP/elektronik skala kecil hingga menengah.
 
 ### Fitur Utama
-- **Halaman Tracking** — pengguna dapat mencari barang berdasarkan kode aset, serial number, atau nama pemilik
-- **Halaman Admin** — pengelolaan data barang masuk, edit, dan hapus data
-- **Tambah Barang** — form input barang baru yang masuk untuk diservis
-- **Riwayat Perbaikan** — timeline log status perubahan barang (diterima → diproses → selesai, dst.)
-- **Status Badge** — 8 status berbeda dengan warna dan ikon yang jelas
+- **Halaman Tracking (Publik)** — pelanggan dapat mencari status barang berdasarkan kode servis, serial number, atau nama barang
+- **Halaman Admin** — pengelolaan data barang masuk, edit status, dan hapus data
+- **Tambah Barang** — form input barang baru dengan kode servis auto-generate
+- **Riwayat Servis** — timeline log perubahan status barang
+- **Notifikasi WhatsApp** — otomatis membuka WA ke nomor pelanggan dengan pesan update status saat admin menyimpan perubahan
 
-### Status yang Tersedia
+### Alur Status Servis
+```
+Diterima → Menunggu Antrian → Pemesanan Sparepart (opsional) → Proses Pengerjaan & Testing → Selesai Service
+```
+
 | Status | Keterangan |
 |---|---|
-| DITERIMA_GA | Barang baru diterima di GA |
-| DIKIRIM_KE_SERVICE | Barang dikirim ke teknisi/vendor |
-| SEDANG_DIPROSES | Barang sedang diperbaiki |
-| MENUNGGU_SPAREPART | Menunggu ketersediaan suku cadang |
-| SELESAI_DISERVICE | Perbaikan selesai |
-| TIDAK_BISA_DISERVICE | Barang tidak dapat diperbaiki |
-| REKOMENDASI_PEMUSNAHAN | Direkomendasikan untuk dimusnahkan |
-| DIKEMBALIKAN | Barang sudah dikembalikan ke pemilik |
+| DITERIMA | Barang baru diterima di counter |
+| MENUNGGU_ANTRIAN | Menunggu giliran dikerjakan |
+| PEMESANAN_SPAREPART | Sedang memesan suku cadang |
+| PROSES_PENGERJAAN | Barang sedang diperbaiki & diuji |
+| SELESAI | Perbaikan selesai, siap diambil |
 
 ---
 
@@ -99,7 +100,7 @@
 | Database | Supabase PostgreSQL | DBaaS | Rp 0 |
 | Source Control | GitHub | — | Rp 0 |
 
-> **Catatan:** Layanan berbayar yang digunakan adalah **VPS RumahWeb** yang masuk kategori **IaaS (Infrastructure as a Service)** — pengguna mendapat kontrol penuh atas server (OS, runtime, konfigurasi), berbeda dengan PaaS seperti Vercel yang abstraksi infrastrukturnya lebih tinggi.
+> **Catatan:** VPS RumahWeb masuk kategori **IaaS (Infrastructure as a Service)** — pengguna mendapat kontrol penuh atas server (OS, runtime, konfigurasi), berbeda dengan PaaS seperti Vercel yang abstraksi infrastrukturnya lebih tinggi.
 
 ---
 
@@ -110,11 +111,12 @@
 | Next.js | 16.2.4 | Framework React fullstack |
 | React | 19.2.4 | UI Library |
 | Node.js | 20.20.2 | JavaScript runtime |
-| PM2 | Latest | Process manager — menjaga app tetap hidup |
-| Supabase JS | 2.x | Client library untuk koneksi ke database |
+| PM2 | Latest | Process manager — menjaga app tetap hidup 24/7 |
+| Supabase JS | 2.x | Client library koneksi ke database |
 | PostgreSQL | (via Supabase) | Database relasional |
 | AlmaLinux | 8.9 | OS server VPS |
 | Bootstrap Icons | CDN | Icon library |
+| WhatsApp (wa.me) | — | Notifikasi ke pelanggan via link WA |
 
 ---
 
@@ -125,32 +127,39 @@ Menyimpan data barang yang masuk untuk diservis.
 
 | Kolom | Tipe | Keterangan |
 |---|---|---|
-| id | UUID | Primary key |
-| kode_aset | VARCHAR | Kode unik aset (ex: C06.001002) |
+| id | UUID | Primary key (auto) |
+| kode_aset | VARCHAR | Kode servis auto-generate (format: SRV-YYYYMMDD-XXXX) |
 | nama_barang | VARCHAR | Nama barang |
-| nama_pemilik | VARCHAR | Nama pemilik barang |
-| pemilik_asal | VARCHAR | Unit/divisi asal |
-| unit | VARCHAR | Unit organisasi |
-| lokasi | VARCHAR | Lokasi barang |
-| merk | VARCHAR | Merk barang |
-| tipe | VARCHAR | Tipe/model barang |
-| serial_number | VARCHAR | Serial number barang |
-| keluhan | TEXT | Keluhan/kerusakan yang dilaporkan |
-| tanggal_masuk | DATE | Tanggal barang diterima |
+| kategori_barang | VARCHAR | Kategori barang (opsional) |
+| pemilik_asal | VARCHAR | Nama pelanggan |
+| no_hp_pelanggan | VARCHAR | Nomor HP/WA pelanggan (untuk notifikasi) |
+| email_pelanggan | VARCHAR | Email pelanggan (opsional, data saja) |
+| merk | VARCHAR | Merk/tipe barang (opsional) |
+| serial_number | VARCHAR | Serial number (opsional) |
+| keluhan | TEXT | Deskripsi keluhan/kerusakan |
 | status_terakhir | VARCHAR | Status terkini barang |
+| lokasi_terakhir | VARCHAR | Lokasi terkini barang |
+| created_at | TIMESTAMP | Waktu record dibuat |
+| updated_at | TIMESTAMP | Waktu terakhir diupdate |
 
 ### Tabel: `service_logs`
 Menyimpan riwayat perubahan status barang.
 
 | Kolom | Tipe | Keterangan |
 |---|---|---|
-| id | UUID | Primary key |
+| id | UUID | Primary key (auto) |
 | service_item_id | UUID | Foreign key ke service_items |
 | status | VARCHAR | Status pada log ini |
-| tanggal | DATE | Tanggal perubahan status |
-| keterangan | TEXT | Catatan/keterangan tambahan |
-| teknisi | VARCHAR | Nama teknisi yang menangani |
-| created_at | TIMESTAMP | Waktu record dibuat |
+| lokasi | VARCHAR | Lokasi pada log ini |
+| catatan_update | TEXT | Catatan/keterangan update |
+| created_at | TIMESTAMP | Waktu log dibuat |
+
+### Query Migrasi Kolom Baru
+```sql
+-- Jalankan di Supabase SQL Editor
+ALTER TABLE service_items ADD COLUMN email_pelanggan TEXT;
+ALTER TABLE service_items ADD COLUMN no_hp_pelanggan TEXT;
+```
 
 ---
 
@@ -160,30 +169,57 @@ Menyimpan riwayat perubahan status barang.
 service-tracking-ga/
 ├── src/
 │   ├── app/
-│   │   ├── page.js              # Root → redirect ke /tracking
-│   │   ├── layout.js            # Layout global (Bootstrap, fonts)
-│   │   ├── globals.css          # Global styles
+│   │   ├── page.js                  # Root → redirect ke /tracking
+│   │   ├── layout.js                # Layout global (Bootstrap, fonts)
+│   │   ├── globals.css              # Global styles
 │   │   ├── tracking/
-│   │   │   └── page.js          # Halaman publik tracking barang
+│   │   │   └── page.js              # Halaman publik tracking barang
 │   │   └── admin/
-│   │       ├── page.js          # Halaman admin (daftar semua barang)
+│   │       ├── page.js              # Dashboard admin (daftar semua barang)
 │   │       ├── create/
-│   │       │   └── page.js      # Form tambah barang baru
+│   │       │   └── page.js          # Form tambah barang baru
 │   │       └── edit/[id]/
-│   │           └── page.js      # Form edit barang
+│   │           └── page.js          # Form update status barang
 │   └── lib/
-│       └── supabaseClient.js    # Inisialisasi Supabase client
-├── public/                      # Asset statis
-├── package.json                 # Dependencies
-├── next.config.mjs              # Konfigurasi Next.js
-└── .env.local                   # Environment variables (tidak di-commit)
+│       └── supabaseClient.js        # Inisialisasi Supabase client
+├── docs/
+│   └── DOKUMENTASI-UAS-CLOUD.md    # Dokumentasi ini
+├── public/                          # Asset statis
+├── package.json                     # Dependencies
+└── next.config.mjs                  # Konfigurasi Next.js
 ```
 
 ---
 
-## 6. Proses Deployment
+## 6. Mekanisme Notifikasi WhatsApp
 
-### 6.1 Setup Awal VPS (Dilakukan Sekali)
+Notifikasi ke pelanggan menggunakan **wa.me link** — gratis, tanpa API berbayar, dan works di semua device (HP maupun desktop).
+
+**Alur:**
+1. Admin membuka halaman edit barang
+2. Admin memilih status terbaru dan mengisi catatan
+3. Admin klik **"Simpan & Kirim Notifikasi"**
+4. Sistem menyimpan perubahan ke database
+5. Browser **otomatis membuka tab baru** ke `wa.me/{no_hp}?text={pesan_otomatis}`
+6. Admin tinggal klik "Kirim" di WhatsApp
+
+**Format pesan otomatis:**
+```
+Halo {nama_pelanggan}, kami ingin menginformasikan update terbaru barang servis Anda:
+
+📦 Barang   : {nama_barang}
+🔖 Kode     : {kode_servis}
+📍 Status   : {status_terbaru}
+📝 Catatan  : {catatan_admin}
+
+Terima kasih telah mempercayakan servis kepada kami.
+```
+
+---
+
+## 7. Proses Deployment
+
+### 7.1 Setup Awal VPS (Dilakukan Sekali)
 
 ```bash
 # 1. Login ke VPS via SSH
@@ -196,71 +232,52 @@ dnf update -y
 curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
 dnf install -y nodejs
 
-# 4. Install PM2 (process manager)
+# 4. Install PM2 & Git
 npm install -g pm2
-
-# 5. Install Git
 dnf install -y git
 
-# 6. Clone repository
+# 5. Clone repository
 git clone https://github.com/iyunn/service-tracking-ga.git
 cd service-tracking-ga
 
-# 7. Install dependencies project
+# 6. Install dependencies
 npm install
 
-# 8. Buat file environment variables
+# 7. Buat file environment variables
 vi .env.local
-# Isi dengan:
+# Isi:
 # NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 # NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 
-# 9. Build aplikasi
+# 8. Build & jalankan
 npm run build
-
-# 10. Jalankan dengan PM2
 pm2 start npm --name "service-tracking-ga" -- start
-
-# 11. Set auto-start saat VPS reboot
 pm2 startup && pm2 save
 ```
 
-### 6.2 Mekanisme Update Code (Setiap Ada Perubahan)
+### 7.2 Mekanisme Update Code (Setiap Ada Perubahan)
 
 ```
-Alur Update:
-
 [Codespace]          [GitHub]           [VPS RumahWeb]
     │                   │                     │
     │── git push ──────►│                     │
     │                   │                     │
+    │              SSH dari laptop            │
     │                   │◄── git pull ────────│
-    │                   │                     │── npm run build
-    │                   │                     │── pm2 restart
+    │                   │     npm run build   │
+    │                   │     pm2 restart     │
     │                   │                     │
     │                   │              App versi baru live ✅
 ```
 
-**Langkah konkret setiap update:**
-
-1. Edit code di GitHub Codespace seperti biasa
-2. Push ke GitHub:
-   ```bash
-   git add . && git commit -m "pesan commit" && git push
-   ```
-3. SSH ke VPS dari laptop:
-   ```bash
-   ssh root@103.247.8.227
-   ```
-4. Jalankan perintah update (1 baris):
-   ```bash
-   cd service-tracking-ga && git pull && npm run build && pm2 restart service-tracking-ga
-   ```
-5. App versi terbaru langsung live di `http://103.247.8.227:3000`
+**Perintah update di VPS (1 baris):**
+```bash
+cd service-tracking-ga && git pull && npm run build && pm2 restart service-tracking-ga
+```
 
 ---
 
-## 7. Perbandingan Arsitektur UTS vs UAS
+## 8. Perbandingan Arsitektur UTS vs UAS
 
 | Aspek | UTS (Vercel — Gratis) | UAS (VPS RumahWeb — Berbayar) |
 |---|---|---|
@@ -271,36 +288,37 @@ Alur Update:
 | **Skalabilitas** | Otomatis | Manual (upgrade paket) |
 | **OS** | Abstrak (tidak terlihat) | AlmaLinux 8.9 |
 | **Runtime Management** | Otomatis oleh Vercel | Manual via PM2 |
-| **Custom Config** | Terbatas | Bebas |
 | **Cocok untuk** | Prototyping cepat | Production & pembelajaran DevOps |
 
 ---
 
-## 8. Akses Aplikasi
+## 9. Akses Aplikasi
 
 | Halaman | URL |
 |---|---|
 | Tracking (Publik) | `http://103.247.8.227:3000/tracking` |
-| Admin | `http://103.247.8.227:3000/admin` |
+| Admin Dashboard | `http://103.247.8.227:3000/admin` |
 | Tambah Barang | `http://103.247.8.227:3000/admin/create` |
 
 ---
 
-## 9. Perintah PM2 yang Berguna
+## 10. Perintah PM2 yang Berguna
 
 ```bash
-pm2 list                          # Cek status semua app
-pm2 logs service-tracking-ga     # Lihat log real-time
-pm2 restart service-tracking-ga  # Restart app
-pm2 stop service-tracking-ga     # Stop app
-pm2 monit                        # Monitor CPU & RAM
+pm2 list                           # Cek status semua app
+pm2 logs service-tracking-ga      # Lihat log real-time
+pm2 restart service-tracking-ga   # Restart app
+pm2 stop service-tracking-ga      # Stop app
+pm2 monit                         # Monitor CPU & RAM
 ```
 
 ---
 
-## 10. Catatan Penting
+## 11. Catatan Penting
 
-- File `.env.local` **tidak boleh di-commit** ke GitHub karena berisi credentials Supabase
-- VPS aktif 24/7 selama subscription aktif (jatuh tempo: 21 Juli 2026)
-- Supabase free tier akan **pause otomatis** jika tidak ada aktivitas selama 7 hari — pastikan app aktif diakses sebelum demo
+- File `.env.local` **tidak boleh di-commit** ke GitHub — berisi credentials Supabase
+- VPS aktif 24/7 selama subscription aktif — **jatuh tempo: 21 Juli 2026**
+- Supabase free tier akan **pause otomatis** jika tidak ada aktivitas selama 7 hari — akses app secara berkala sebelum demo
 - Port yang digunakan adalah **3000** — akses via `http://` bukan `https://` (belum setup SSL)
+- Kode servis di-generate otomatis dengan format `SRV-YYYYMMDD-XXXX` — tidak perlu input manual
+- Fitur notifikasi WA menggunakan `wa.me` link — **gratis, tanpa API berbayar**, works di HP & desktop
