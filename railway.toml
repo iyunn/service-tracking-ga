@@ -1,0 +1,14 @@
+# railway.toml - Konfigurasi deployment Railway
+# Dokumentasi: https://docs.railway.app/reference/config-as-code
+
+[build]
+# Railway akan otomatis detect Dockerfile di root repo
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# Port yang di-expose oleh Next.js (harus sama dengan EXPOSE di Dockerfile)
+startCommand = "node server.js"
+healthcheckPath = "/"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
